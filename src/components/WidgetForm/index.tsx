@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { CloseButton } from "../CloseButton";
 
 import bugImageUrl from '../../assets/bug.svg';
 import ideaImageUrl from '../../assets/idea.svg';
 import thoughtImageUrl from '../../assets/thought.svg';
-
-const feedbackTypes = {
+import { FeedbackTypeStep } from "./Steps/FeedbackTypeStep";
+import { FeedbackContentStep } from "./Steps/FeedbackContentStep";
+import { FeedbackSuccessStep } from "./Steps/FeedbackSuccessStep";
+export const feedbackTypes = {
   BUG: {
     title: "Problema",
     image: {
@@ -29,37 +30,42 @@ const feedbackTypes = {
   },
 };
 
-type FeedbackType = keyof typeof feedbackTypes;
+export type FeedbackType = keyof typeof feedbackTypes;
 
 export function WidgetForm() {
   const [feedbackType, setFeedbackType] = useState<FeedbackType | null>(null);
+  const [feedbackSent, setFeedbackSent] = useState<boolean>(false);
+
+  function handleRestartFeedback() {
+    setFeedbackSent(false);
+    setFeedbackType(null);
+  }
 
   return (
     <div className="bg-zinc-900 p-4 relative rounded-2xl mb-4 flex flex-col items-center shadow-lg w-[calc(100vw-2rem)] md:w-auto">
-      <header>
-        <span className="text-xl leading-6">Deixe seu feedback</span>
+    
+    {
+      feedbackSent ? (
+        <FeedbackSuccessStep onFeedbackRestartRequested={handleRestartFeedback} />
+      ) : (
+        <>
+          {!feedbackType ? (
+            <FeedbackTypeStep onFeedbackChange={setFeedbackType} />
+          ) : (
+            <FeedbackContentStep
+              feedbackType={feedbackType}
+              onFeedbackRestartRequests={handleRestartFeedback}
+              onFeedbackSent={() => setFeedbackSent(true)}
+            />
+          )}
+        </>
+      )
+    }
+      
 
-        <CloseButton />
-      </header>
-
-      <div className="flex py-7 gap-2 w-full">
-        {Object.entries(feedbackTypes).map(([key, value]) => {
-          return (
-            <button
-              key={key}
-              className="bg-zinc-800 rounded-lg py-5 w-24 flex-1 flex flex-col items-center gap-2 border-2 border-transparent hover:border-brand-500 focus:border-brand-500 focus:outline-none"
-              onClick={() => setFeedbackType(key as FeedbackType)}
-            >
-              <img src={value.image.source} alt={value.image.alt} />
-              <span>{value.title}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      <footer>
-        Feito com ♥ por <a className="underline underline-offset-2" href="https://github.com/nyfts" target="_blank">Luan Jesus</a>
-      </footer>
+    <footer>
+      Feito com ♥ por <a className="underline underline-offset-2" href="https://github.com/nyfts" target="_blank">Luan Jesus</a>
+    </footer>
     </div>
   )
 }
